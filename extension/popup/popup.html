@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReplyGenius</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-gem">✦</span>
+      <span class="logo-text">Reply<span class="logo-accent">Genius</span></span>
+    </div>
+    <div class="status-dot" id="statusDot" title="Backend status"></div>
+  </header>
+
+  <!-- ── Tab Navigation ─────────────────────────────────────── -->
+  <nav class="tabs">
+    <button class="tab active" data-tab="generate">Generate</button>
+    <button class="tab" data-tab="saved">Saved</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </nav>
+
+  <!-- ── Tab: Generate ──────────────────────────────────────── -->
+  <section class="tab-content active" id="tab-generate">
+    <p class="hint-text">
+      Open LinkedIn, X, Reddit, or Medium and click the <strong>✨ Generate Reply</strong> button under any post.
+    </p>
+
+    <div class="quick-tone">
+      <p class="section-label">Default Tone</p>
+      <div class="tone-grid" id="popupToneGrid">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
+    <div class="platforms">
+      <p class="section-label">Active on</p>
+      <div class="platform-chips">
+        <span class="platform-chip">💼 LinkedIn</span>
+        <span class="platform-chip">𝕏 Twitter/X</span>
+        <span class="platform-chip">🤝 Reddit</span>
+        <span class="platform-chip">📖 Medium</span>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat">
+        <span class="stat-num" id="statReplies">0</span>
+        <span class="stat-label">Replies</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" id="statSaved">0</span>
+        <span class="stat-label">Saved</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Tab: Saved Replies ─────────────────────────────────── -->
+  <section class="tab-content" id="tab-saved">
+    <div id="savedList" class="saved-list">
+      <div class="empty-state">
+        <span class="empty-icon">🔖</span>
+        <p>No saved replies yet.</p>
+        <small>Click "Save" on any generated reply.</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Tab: Settings ─────────────────────────────────────────── -->
+  <section class="tab-content" id="tab-settings">
+
+    <div class="setting-group">
+      <label class="setting-label">Backend URL</label>
+      <input
+        class="setting-input"
+        id="backendUrlInput"
+        type="text"
+        placeholder="http://localhost:5000"
+      />
+      <p class="setting-hint">Point this to your deployed Flask backend.</p>
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">Default Length</label>
+      <select class="setting-select" id="defaultLength">
+        <option value="Short">Short</option>
+        <option value="Medium" selected>Medium</option>
+        <option value="Long">Long</option>
+      </select>
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label" style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="autoInject" checked />
+        Auto-inject buttons on page load
+      </label>
+    </div>
+
+    <button class="save-settings-btn" id="saveSettingsBtn">Save Settings</button>
+
+    <div class="settings-toast" id="settingsToast">✅ Settings saved!</div>
+
+    <div class="backend-status-box" id="backendStatusBox">
+      <span id="backendStatusText">–</span>
+      <button class="ping-btn" id="pingBtn">Test Connection</button>
+    </div>
+
+  </section>
+
+  <script src="popup.js"></script>
+</body>
+</html>
