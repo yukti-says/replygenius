@@ -7,6 +7,9 @@
 // ── Platform detection ─────────────────────────────────────────────────────
 const PLATFORM = detectPlatform();
 
+// Enable verbose debug logs when troubleshooting selector matching
+const DEBUG = true;
+
 function detectPlatform() {
   const host = window.location.hostname;
   if (host.includes("linkedin.com")) return "linkedin";
@@ -20,26 +23,59 @@ function detectPlatform() {
 // Each platform has different HTML structure, so we target differently.
 const SELECTORS = {
   linkedin: {
-    // Broadened selectors to handle LinkedIn DOM variations and SPA updates
-    feed: "div[data-urn^='urn:li:activity:'], article, .feed-shared-update-v2, .occludable-update, .update",
-    text: ".feed-shared-text, .feed-shared-update-v2__description, .attributed-text-segment-list__content, .update-components-text, span.break-words, div.break-words",
-    actions:
-      ".social-actions-bar, .feed-shared-social-actions, [data-test-social-actions], [data-control-name='comments'], [role='group']",
+    // Multiple fallback selectors — tries each one
+    feed: [
+      ".feed-shared-update-v2",
+      ".occludable-update",
+      "[data-urn]",
+      ".scaffold-finite-scroll__content > div > div",
+    ].join(", "),
+
+    text: [
+      ".feed-shared-text",
+      ".feed-shared-text-view",
+      ".attributed-text-segment-list__content",
+      ".break-words span[dir='ltr']",
+      ".feed-shared-update-v2__description",
+      ".feed-shared-inline-show-more-text",
+      // newest LinkedIn structure
+      ".update-components-text",
+      "[class*='commentary']",
+    ].join(", "),
+
+    actions: [
+      ".feed-shared-social-action-bar",
+      ".social-actions-bar",
+      ".feed-shared-social-actions",
+      ".update-components-actors__meta",
+      // newest
+      "[class*='social-actions']",
+      "[class*='action-bar']",
+    ].join(", "),
   },
+
   twitter: {
     feed: "article[data-testid='tweet']",
     text: "[data-testid='tweetText']",
-    actions: "[role='group'][id^='id__']",
+    actions: "[role='group']",
   },
+
   reddit: {
-    feed: "[data-testid='post-container'], .Post, shreddit-post",
-    text: "[data-click-id='text'] .RichTextJSON-root, .md, [slot='text-body']",
-    actions: ".action-buttons, [data-click-id='body']",
+    feed: ["shreddit-post", "[data-testid='post-container']", ".Post"].join(
+      ", ",
+    ),
+    text: [
+      "[slot='text-body']",
+      "[data-click-id='text'] .RichTextJSON-root",
+      ".md",
+    ].join(", "),
+    actions: ["[slot='credit-bar']", ".action-buttons"].join(", "),
   },
+
   medium: {
     feed: "article",
-    text: "article p, .graf--p",
-    actions: ".js-postActionsPanel, .postActions, footer",
+    text: "article p",
+    actions: "article footer",
   },
 };
 
@@ -70,24 +106,31 @@ function injectButtons() {
   if (!sel) return;
 
   const posts = document.querySelectorAll(sel.feed);
+  console.log(`[ReplyGenius] Found ${posts.length} posts on ${PLATFORM}`); // debug line
 
   posts.forEach((post) => {
-    // Skip if already injected
-    if (post.querySelector(".rg-btn")) return;
+    if (post.querySelector(".rg-btn")) return; // already injected
 
-    // Extract post text
+    // Try to get post text
     const textEl = post.querySelector(sel.text);
     const postText = textEl ? textEl.innerText.trim() : "";
-    if (!postText || postText.length < 20) return; // skip very short / empty
 
-    // Find actions bar to append button to
+    // Skip truly empty posts
+    if (!postText || postText.length < 15) return;
+
+    // Try to find actions bar — but don't require it
     const actionsBar = post.querySelector(sel.actions);
-    if (!actionsBar && PLATFORM !== "medium") return;
 
-    // Create the button
+    // Create button
     const btn = createGenerateButton(post, postText, actionsBar || post);
-    const target = actionsBar || post;
-    target.appendChild(btn);
+
+    if (actionsBar) {
+      // Append to actions bar
+      actionsBar.appendChild(btn);
+    } else {
+      // Fallback: add button at the bottom of the post
+      post.appendChild(btn);
+    }
   });
 }
 
