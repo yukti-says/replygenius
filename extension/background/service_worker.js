@@ -5,7 +5,7 @@
 // ============================================================
 
 // Default backend URL – user can override this in settings
-const DEFAULT_BACKEND = "https://replygenius-a92f.onrender.com";
+const DEFAULT_BACKEND = "https://replygenius-a92f.onrender.com"; 
 
 // ── Listen for messages from content scripts or popup ──────────────────────
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
